@@ -13,23 +13,24 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class ReactiveCSVReader {
+public class NioCSVReader {
 
-    public ReactiveCSVReader() {
+    public NioCSVReader() {
 
     }
 
 
     public List<Product> nonBlockingRead(Path directoryPath, int concurrentConsumers, int bufferSize) throws IOException, InterruptedException {
         ConcurrentHashMap<Integer, SortedSet<Product>> aggregationBuffer = new ConcurrentHashMap<>();
-        List<FileWorker> runnedWorkersPool = new ArrayList<>();
 
         try (Stream<Path> paths = Files.walk(directoryPath)) {
-             //create worker for each file
+            //create worker for each file
             ConcurrentLinkedDeque<FileWorker> workers = paths.filter(path -> Files.isRegularFile(path) && path.toFile().getName().endsWith(".csv"))
                     .map(p -> new FileWorker(p, bufferSize)).collect(Collectors.toCollection(ConcurrentLinkedDeque::new));
-             //run workers
+            //run workers
+            //fixme: more flexible and better way to do this is use zip() operator, but seems like no way to hug request() backpressure with zipped observables
             if (!workers.isEmpty()) {
+                List<FileWorker> runnedWorkersPool = new ArrayList<>();
                 IntStream.range(0, workers.size() >= concurrentConsumers ? workers.size() : concurrentConsumers).forEach(x -> Optional.ofNullable(workers.poll()).ifPresent(worker -> {
                     worker.subscribe(new AggregationSubscriber(aggregationBuffer, workers, worker.getFile().toString()));
                     runnedWorkersPool.add(worker);

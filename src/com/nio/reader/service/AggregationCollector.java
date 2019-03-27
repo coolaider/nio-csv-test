@@ -13,12 +13,14 @@ import java.util.stream.Collectors;
 
 public class AggregationCollector {
 
+
+    //in context of console application enough static correlation buffers here , but as for component of real application should be another approach
     private static ConcurrentHashMap<Integer, ReentrantLock> locks = new ConcurrentHashMap<>();
 
     private static AtomicInteger correlationCounter = new AtomicInteger(0);
 
 
-    public static Collector<Product, ?, ConcurrentHashMap<Integer, SortedSet<Product>>> toCSVFilesCollector(ConcurrentHashMap<Integer, SortedSet<Product>> aggregationBuffer, Integer maxSameID) {
+    public static Collector<Product, ?, ConcurrentHashMap<Integer, SortedSet<Product>>> toCSVFilesCollector(ConcurrentHashMap<Integer, SortedSet<Product>> aggregationBuffer, int maxSameID, int maxResultEntries) {
         return Collectors.toConcurrentMap((Product p) -> p.getId(), (Product v) -> {
             SortedSet<Product> set = aggregationBuffer.getOrDefault(v.getId(), new TreeSet<Product>(Comparator.comparingDouble(Product::getPrice)));
             locks.putIfAbsent(v.getId(), new ReentrantLock());
@@ -29,10 +31,10 @@ public class AggregationCollector {
             if (set.size() > maxSameID) {
                 set.remove(last);
             }
-            if (set.size() <= maxSameID && correlationCounter.get() == 1000) {
+            if (set.size() <= maxSameID && correlationCounter.get() == maxResultEntries) {
                 set.remove(last);
             }
-            if (correlationCounter.get() < 1000 && size < set.size()) {
+            if (correlationCounter.get() < maxResultEntries && size < set.size()) {
                 correlationCounter.incrementAndGet();
             }
             locks.get(v.getId()).unlock();

@@ -27,7 +27,8 @@ public class AggregationSubscriber extends DisposableSubscriber<List<String>> {
         strings.stream().filter(s -> !s.isEmpty()).map(string -> {
             String[] s = string.split(",");
             return new Product(Integer.valueOf(s[0]), s[1], s[2], s[3], Double.valueOf(s[4]));
-        }).collect(AggregationCollector.toCSVFilesCollector(aggregationBuffer, 20));
+        }).collect(AggregationCollector.toCSVFilesCollector(aggregationBuffer, 20,1000));
+
         request(1);
     }
 
