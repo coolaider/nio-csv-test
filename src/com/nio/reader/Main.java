@@ -26,7 +26,9 @@ public class Main {
     public static void processFiles(Path directoryPath, int concurrentConsumers, int bufferSize) throws InterruptedException, IOException {
         List<Product> products = new ReactiveCSVReader().nonBlockingRead(directoryPath, concurrentConsumers, bufferSize);
         System.out.println(products.size());
-        Files.write(Paths.get(System.getProperty("user.dir") + "/csv-output-data/result.csv"), products.stream().map(p->p.getId()+","+p.getName()+","+p.getCondition()+","+p.getState()+","+p.getPrice()).collect(Collectors.toList()));
+
+        Files.write(Paths.get(System.getProperty("user.dir") + "/csv-output-data/result.csv"), products.stream()
+                .map(p->p.getId()+","+p.getName()+","+p.getCondition()+","+p.getState()+","+p.getPrice()).collect(Collectors.toList()));
     }
 
 
