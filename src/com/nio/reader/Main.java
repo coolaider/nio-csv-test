@@ -18,7 +18,9 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException {
         Path directoryPath = Paths.get(System.getProperty("user.dir") + "/csv-test-data/");
-        TestUtils.prepareTestData(directoryPath, 10, 100000, 200);
+        TestUtils.prepareTestData(directoryPath, 100, 100000, 200);
+
+        //concurrentConsumers-max parallel file workers; bufferSize-size of buffer for data per file (portion reading)
         processFiles(directoryPath, 50, 1000000);
     }
 
