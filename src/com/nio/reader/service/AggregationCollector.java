@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class AggregationCollector {
 
 
-    //in context of console application enough static correlation buffers here , but as for component of real application should be another approach
+    //fixme: in context of console application is enough static correlation buffers here , but as for component of real application there is should be another approach
     private static ConcurrentHashMap<Integer, ReentrantLock> locks = new ConcurrentHashMap<>();
 
     private static AtomicInteger correlationCounter = new AtomicInteger(0);
