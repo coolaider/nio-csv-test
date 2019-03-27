@@ -28,7 +28,7 @@ public class NioCSVReader {
             ConcurrentLinkedDeque<FileWorker> workers = paths.filter(path -> Files.isRegularFile(path) && path.toFile().getName().endsWith(".csv"))
                     .map(p -> new FileWorker(p, bufferSize)).collect(Collectors.toCollection(ConcurrentLinkedDeque::new));
             //run workers
-            //fixme: more flexible and better way to do this is use zip() operator, but seems like no way to hug request() backpressure with zipped observables
+            //fixme: more flexible and better way to do this is use zip() operator, but seems like no way to hug request() backpressure with zipped observables. here we have hard components coupling
             if (!workers.isEmpty()) {
                 List<FileWorker> runnedWorkersPool = new ArrayList<>();
                 IntStream.range(0, workers.size() >= concurrentConsumers ? workers.size() : concurrentConsumers).forEach(x -> Optional.ofNullable(workers.poll()).ifPresent(worker -> {
