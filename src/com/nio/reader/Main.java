@@ -18,13 +18,20 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException {
         Path directoryPath = Paths.get(System.getProperty("user.dir") + "/csv-test-data/");
-        TestUtils.prepareTestData(directoryPath, 100, 100000, 200);
+        TestUtils.prepareTestData(directoryPath, 100, 100000, 500);
 
-        //concurrentConsumers-max parallel file workers; bufferSize-size of buffer for data per file (portion reading)
-        processFiles(directoryPath, 50, 1000000);
+        processFiles(directoryPath, 50, 100000);
     }
 
 
+
+
+    /**
+     * @param concurrentConsumers  max parallel file workers
+     *
+     * @param bufferSize  bytes data buffer size  per file (portion reading)
+     *
+     */
     public static void processFiles(Path directoryPath, int concurrentConsumers, int bufferSize) throws InterruptedException, IOException {
         List<Product> products = new NioCSVReader().nonBlockingRead(directoryPath, concurrentConsumers, bufferSize);
 
