@@ -27,10 +27,11 @@ public class Main {
 
     public static void processFiles(Path directoryPath, int concurrentConsumers, int bufferSize) throws InterruptedException, IOException {
         List<Product> products = new NioCSVReader().nonBlockingRead(directoryPath, concurrentConsumers, bufferSize);
-        System.out.println(products.size());
+
+        System.out.println("Finished with " + products.size() + " selected entries");
 
         Files.write(Paths.get(System.getProperty("user.dir") + "/csv-output-data/result.csv"), products.stream()
-                .map(p->p.getId()+","+p.getName()+","+p.getCondition()+","+p.getState()+","+p.getPrice()).collect(Collectors.toList()));
+                .map(p -> p.getId() + "," + p.getName() + "," + p.getCondition() + "," + p.getState() + "," + p.getPrice()).collect(Collectors.toList()));
     }
 
 

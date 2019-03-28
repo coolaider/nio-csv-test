@@ -6,29 +6,27 @@ import io.reactivex.subscribers.DisposableSubscriber;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 
 public class AggregationSubscriber extends DisposableSubscriber<List<String>> {
 
     ConcurrentLinkedDeque<FileWorker> workersPool;
     String filename;
-    ConcurrentHashMap<Integer, SortedSet<Product>> aggregationBuffer;
+    Consumer<List<String>> onNexConsumer;
 
 
-    public AggregationSubscriber(ConcurrentHashMap<Integer, SortedSet<Product>> aggregationBuffer, ConcurrentLinkedDeque<FileWorker> workersPool, String filename) {
+    public AggregationSubscriber(Consumer<List<String>> onNexConsumer, ConcurrentLinkedDeque<FileWorker> workersPool, String filename) {
         this.workersPool = workersPool;
         this.filename = filename;
-        this.aggregationBuffer = aggregationBuffer;
+        this.onNexConsumer = onNexConsumer;
     }
 
 
     @Override
     public void onNext(List<String> strings) {
-        strings.stream().filter(s -> !s.isEmpty()).map(string -> {
-            String[] s = string.split(",");
-            return new Product(Integer.valueOf(s[0]), s[1], s[2], s[3], Double.valueOf(s[4]));
-        }).collect(AggregationCollector.toCSVFilesCollector(aggregationBuffer, 20,1000));
-
+        onNexConsumer.accept(strings);
         request(1);
     }
 
@@ -39,7 +37,7 @@ public class AggregationSubscriber extends DisposableSubscriber<List<String>> {
 
     @Override
     public void onComplete() {
-        Optional.ofNullable(workersPool.poll()).ifPresent(worker -> worker.subscribe(new AggregationSubscriber(aggregationBuffer, workersPool, worker.getFile().toString())));
+        Optional.ofNullable(workersPool.poll()).ifPresent(worker -> worker.subscribe(new AggregationSubscriber(onNexConsumer, workersPool, worker.getFile().toString())));
         System.out.println(filename + " succesfully collected");
     }
 

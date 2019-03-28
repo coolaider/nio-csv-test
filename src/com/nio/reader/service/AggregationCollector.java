@@ -14,15 +14,15 @@ import java.util.stream.Collectors;
 public class AggregationCollector {
 
 
-    //fixme: in context of console application is enough static correlation buffers here , but as for component of real application there is should be another approach
+    //fixme: in context of console application is enough static correlation buffers here , but as for component of real application there is should be another approach (pass as parameters to collector for example)
     private static ConcurrentHashMap<Integer, ReentrantLock> locks = new ConcurrentHashMap<>();
 
     private static AtomicInteger correlationCounter = new AtomicInteger(0);
 
 
     public static Collector<Product, ?, ConcurrentHashMap<Integer, SortedSet<Product>>> toCSVFilesCollector(ConcurrentHashMap<Integer, SortedSet<Product>> aggregationBuffer, int maxSameID, int maxResultEntries) {
-        return Collectors.toConcurrentMap((Product p) -> p.getId(), (Product v) -> {
-            SortedSet<Product> set = aggregationBuffer.getOrDefault(v.getId(), new TreeSet<Product>(Comparator.comparingDouble(Product::getPrice)));
+        return Collectors.toConcurrentMap(Product::getId, (Product v) -> {
+            SortedSet<Product> set = aggregationBuffer.getOrDefault(v.getId(), new TreeSet<>(Comparator.comparingDouble(Product::getPrice)));
             locks.putIfAbsent(v.getId(), new ReentrantLock());
             locks.get(v.getId()).lock();
             int size = set.size();
